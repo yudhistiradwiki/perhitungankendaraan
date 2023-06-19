@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="728" height="111" viewBox="0 0 728 111">
+  <defs>
+    <style>
+      .cls-1 {
+        font-size: 53.897px;
+        font-family: Montserrat;
+        font-weight: 800;
+      }
+
+      .cls-2 {
+        fill: #cab213;
+        font-weight: 700;
+      }
+    </style>
+  </defs>
+  <text id="VehicleCounter" class="cls-1" transform="matrix(1.623, 0, 0, 1.623, 11.669, 87.227)">Vehicle<tspan class="cls-2">Counter</tspan></text>
+</svg>
