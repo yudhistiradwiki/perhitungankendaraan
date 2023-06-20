@@ -359,8 +359,8 @@ def predict(cfg):
     init_tracker()
     cfg.model = "baru.pt"
     cfg.imgsz = check_imgsz(cfg.imgsz, min_dim=2)  # check image size
-    cfg.source = "http://192.168.0.127:4747/video" #"2"
-    # cfg.source = "2"
+    # cfg.source = "http://192.168.0.127:4747/video" #"2"
+    cfg.source = "2"
     predictor = DetectionPredictor(cfg)
     predictor()
 
