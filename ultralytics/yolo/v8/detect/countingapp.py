@@ -467,7 +467,9 @@ def send():
     if request.method == 'POST':
         masuk = request.form['masuk']
         keluar = request.form['keluar']
-        pywhatkit.sendwhatmsg("+6289627286733", "Kendaraan Masuk : " + str(masuk) + "Kendaraan Keluar : " + str(keluar), int(datetime.datetime.now().hour), int(datetime.datetime.now().minute) + 2 )
+        pywhatkit.sendwhatmsg("+6289627286733", "============== *VEHICLE COUNTER PEI* ============== \nKendaraan Masuk : " + str(masuk) + 
+                              "\nKendaraan Keluar : " + str(keluar),
+                              int(datetime.datetime.now().hour), int(datetime.datetime.now().minute) + 2 )
         time.sleep(1)
         pyautogui.click()
         time.sleep(1)
