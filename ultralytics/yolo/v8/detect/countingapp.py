@@ -41,8 +41,8 @@ data_deque = {}
 deepsort = None
 
 #---------------- Variabel jumlah kendaraan -----------------
-object_counter = {}
-object_counter1 = {}
+kendaraan_masuk = {}
+kendaraan_keluar = {}
 
 #---------- garis counter --------------
 line = [(0, 345), (638, 345)] 
@@ -217,15 +217,15 @@ def draw_boxes(img, bbox, names,object_id, identities=None, offset=(0, 0)):
           if intersect(data_deque[id][0], data_deque[id][1], line[0], line[1]):
               cv2.line(img, line[0], line[1], (255, 255, 255), 3)
               if "South" in direction:
-                if obj_name not in object_counter:
-                    object_counter[obj_name] = 1
+                if obj_name not in kendaraan_masuk:
+                    kendaraan_masuk[obj_name] = 1
                 else:
-                    object_counter[obj_name] += 1
+                    kendaraan_masuk[obj_name] += 1
               if "North" in direction:
-                if obj_name not in object_counter1:
-                    object_counter1[obj_name] = 1
+                if obj_name not in kendaraan_keluar:
+                    kendaraan_keluar[obj_name] = 1
                 else:
-                    object_counter1[obj_name] += 1
+                    kendaraan_keluar[obj_name] += 1
         
         UI_box(box, img, label=label, color=color, line_thickness=2)
         # gambar garis
@@ -239,13 +239,13 @@ def draw_boxes(img, bbox, names,object_id, identities=None, offset=(0, 0)):
             cv2.line(img, data_deque[id][i - 1], data_deque[id][i], color, thickness)
     
     #penghitungan diatas
-        for idx, (key, value) in enumerate(object_counter1.items()):
+        for idx, (key, value) in enumerate(kendaraan_keluar.items()):
             cnt_str = str(key) + ":" +str(value)
             cv2.line(img, (width - 200,25), (width,25), [85,45,255], 40)
             cv2.putText(img, f'Keluar PEI', (width - 200, 35), 0, 1, [225, 255, 255], thickness=1, lineType=cv2.LINE_AA)
             cv2.line(img, (width - 150, 65 + (idx*40)), (width, 65 + (idx*40)), [85, 45, 255], 30)
             cv2.putText(img, cnt_str, (width - 150, 75 + (idx*40)), 0, 1, [255, 255, 255], thickness = 1, lineType = cv2.LINE_AA)
-        for idx, (key, value) in enumerate(object_counter.items()):
+        for idx, (key, value) in enumerate(kendaraan_masuk.items()):
             cnt_str1 = str(key) + ":" +str(value)
             cv2.line(img, (11,25), (250,25), [85,45,255], 40)
             cv2.putText(img, f'Masuk PEI', (11, 35), 0, 1, [225, 255, 255], thickness=1, lineType=cv2.LINE_AA)    
@@ -343,21 +343,21 @@ class DetectionPredictor(BasePredictor):
         # if cv2.waitKey(1) & 0xFF == ord('q'):
         #     cv2.destroyAllWindows()
         #     mycursor = mydb.cursor()
-        #     columns = ', '.join("`" + str(x).replace('/', '_') + "`" for x in object_counter.keys())
-        #     values = ', '.join("'" + str(x).replace('/', '_') + "'" for x in object_counter.values())
+        #     columns = ', '.join("`" + str(x).replace('/', '_') + "`" for x in kendaraan_masuk.keys())
+        #     values = ', '.join("'" + str(x).replace('/', '_') + "'" for x in kendaraan_masuk.values())
         #     sql = "INSERT INTO %s ( %s ) VALUES ( %s );" % ('datacounter', columns, values)
         #     mycursor.execute(sql)
-        print(object_counter)
-        print(object_counter1)
+        print(kendaraan_masuk)
+        print(kendaraan_keluar)
     
     def count(self):
-        return self.object_counter, self.object_counter1
+        return self.kendaraan_masuk, self.kendaraan_keluar
 
 #------------ Fungsi menjalankan class YOLO -----------------
 @hydra.main(version_base=None, config_path=str(DEFAULT_CONFIG.parent), config_name=DEFAULT_CONFIG.name)
 def predict(cfg):
     init_tracker()
-    cfg.model = "baru.pt"
+    cfg.model = "best.pt"
     cfg.imgsz = check_imgsz(cfg.imgsz, min_dim=2)  # check image size
     # cfg.source = "http://192.168.0.127:4747/video" #"2"
     cfg.source = "2"
@@ -423,6 +423,7 @@ def logout():
 #-------------- Dashboard ----------------
 @app.route('/home')
 def home():
+    import json
     if request.method == 'GET' and 'loggedin' in session:
         cursor = mysql.connection.cursor()
         cursor.execute(''' SELECT ROUND(AVG(motor)) FROM datacounter ''')
@@ -435,6 +436,8 @@ def home():
         bus = cursor.fetchone()
         cursor.execute(''' SELECT tanggal FROM datacounter ''')
         tanggal = cursor.fetchall()
+        cursor.execute(''' SELECT SUM(motor) AS motor, SUM(mobil) AS mobil, SUM(truk) AS truk, SUM(bus) AS bus FROM datacounter GROUP BY tanggal LIMIT 2 ''')
+        graph = cursor.fetchall()
         return render_template('index.html', motor=motor, mobil=mobil, truk=truk, bus=bus, tanggal=tanggal)
     return redirect(url_for('login'))
 
@@ -449,17 +452,33 @@ def hitung():
 #----------------- menampilkan kamera ---------------
 @app.route('/webapp')
 def webapp():
+    import datetime
     #return Response(generate_frames(path_x = session.get('video_path', None),conf_=round(float(session.get('conf_', None))/100,2)),mimetype='multipart/x-mixed-replace; boundary=frame')
     # return Response(predict(), mimetype='multipart/x-mixed-replace; boundary=frame')
     predict()
     cursor = mysql.connection.cursor()
-    columns = ', '.join("`" + str(x).replace('/', '_') + "`" for x in object_counter.keys())
-    values = ', '.join("'" + str(x).replace('/', '_') + "'" for x in object_counter.values())
-    sql = "INSERT INTO %s (%s) VALUES (%s);" % ('datacounter', columns, values)
+    kendaraan_keluar['motor_keluar'] = kendaraan_keluar.pop('motor', 0)
+    kendaraan_keluar['mobil_keluar'] = kendaraan_keluar.pop('mobil', 0)
+    kendaraan_keluar['truk_keluar'] = kendaraan_keluar.pop('truk', 0)
+    kendaraan_keluar['bus_keluar'] = kendaraan_keluar.pop('bus', 0)
+
+    kendaraan_masuk['motor'] = kendaraan_masuk.pop('motor', 0)
+    kendaraan_masuk['mobil'] = kendaraan_masuk.pop('mobil', 0)
+    kendaraan_masuk['truk'] = kendaraan_masuk.pop('truk', 0)
+    kendaraan_masuk['bus'] = kendaraan_masuk.pop('bus', 0)
+
+    columns = ', '.join("`" + str(x).replace('/', '_') + "`" for x in kendaraan_masuk.keys())
+    values = ', '.join("'" + str(x).replace('/', '_') + "'" for x in kendaraan_masuk.values())
+    columns1 = ', '.join("`" + str(x).replace('/', '_') + "`" for x in kendaraan_keluar.keys())
+    values1 = ', '.join("'" + str(x).replace('/', '_') + "'" for x in kendaraan_keluar.values())
+    now = datetime.datetime.now()
+    nows = '"' + str(now.strftime("%Y-%m-%d")) + '"'
+    sql = "INSERT INTO %s (%s, %s, %s) VALUES (%s,%s,%s);" % ('datacounter', 'tanggal', columns, columns1, nows ,values, values1)
     cursor.execute(sql)
     mysql.connection.commit()
-    telegram = "Kirim via whatsapp"
-    return render_template('perhitungan.html', keluar=str(object_counter1), masuk=str(object_counter), telegram=telegram)
+    cursor.execute(''' SELECT * FROM datacounter ''')
+    datacounter = cursor.fetchall()
+    return render_template('perhitungan.html', keluar=str(kendaraan_keluar), masuk=str(kendaraan_masuk), datacounter=datacounter)
 
 @app.route('/send', methods=['GET','POST'])
 def send():
@@ -474,8 +493,7 @@ def send():
         pyautogui.click()
         time.sleep(1)
         pyautogui.press('enter')
-        telegram = "Kirim via whatsapp"
-    return render_template('perhitungan.html', keluar=keluar, masuk=masuk, telegram=telegram)
+    return render_template('perhitungan.html', keluar=keluar, masuk=masuk)
     
 
 if __name__ == "__main__":

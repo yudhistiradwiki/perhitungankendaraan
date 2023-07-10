@@ -256,21 +256,21 @@
           </a>
         </li>
         <li class="nav-item nav-category">Vehicle Counter</li>
-          <li class="nav-item">
-            <a class="nav-link" href="/hitung" aria-expanded="false">
-              <i class="menu-icon mdi mdi-car-connected"></i>
-              <span class="menu-title">Perhitungan</span>
-              <i class="menu-arrow"></i>
-            </a>
-          </li>
-          <li class="nav-item nav-category">Profile</li>
-          <li class="nav-item">
-            <a class="nav-link" href="/logout" aria-expanded="false">
-              <i class="menu-icon mdi mdi-logout"></i>
-              <span class="menu-title">Logout</span>
-              <i class="menu-arrow"></i>
-            </a>
-          </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/hitung" aria-expanded="false">
+            <i class="menu-icon mdi mdi-car-connected"></i>
+            <span class="menu-title">Perhitungan</span>
+            <i class="menu-arrow"></i>
+          </a>
+        </li>
+        <li class="nav-item nav-category">Profile</li>
+        <li class="nav-item">
+          <a class="nav-link" href="/logout" aria-expanded="false">
+            <i class="menu-icon mdi mdi-logout"></i>
+            <span class="menu-title">Logout</span>
+            <i class="menu-arrow"></i>
+          </a>
+        </li>
 
       </ul>
     </nav>
@@ -296,26 +296,27 @@
                           <th>
                             Keluar
                           </th>
+                          <th>
+                            Action
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <td>
-                            {{masuk}}
-                          </td>
-                          <td>
-                            {{keluar}}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td colspan="2">
-                            <form method="post" action="/send">
-                              <input type="text" value="{{masuk}}" name="masuk">
-                              <input type="text" value="{{keluar}}" name="keluar">
-                              <button type="submit" class="btn btn-outline-primary">{{telegram}}</button>
-                            </form>
-                          </td>
-                        </tr>
+                        <form method="post" action="/send">
+                          <tr>
+                            <td>
+                              {{masuk}}
+                              <input type="hidden" readonly value="{{masuk}}" name="masuk">
+                            </td>
+                            <td>
+                              {{keluar}}
+                              <input type="hidden" readonly value="{{keluar}}" name="keluar">
+                            </td>
+                            <td>
+                              <button type="submit" class="btn btn-outline-primary">send</button>
+                            </td>
+                          </tr>
+                        </form>
                       </tbody>
                     </table>
                   </div>
