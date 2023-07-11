@@ -48,3 +48,13 @@ Time: 13:57
 Phone Number: +6289627286733
 Message: ============== *VEHICLE COUNTER PEI* ============== Kendaraan Masuk : {'motor': 0, 'mobil': 0, 'truk': 0, 'bus': 0}Kendaraan Keluar : {'motor_keluar': 0, 'mobil_keluar': 0, 'truk_keluar': 0, 'bus_keluar': 0}
 --------------------
+Date: 11/7/2023
+Time: 14:41
+Phone Number: +6289627286733
+Message: ============== *VEHICLE COUNTER PEI* ============== Kendaraan Masuk : {'motor': 3, 'mobil': 0, 'truk': 0, 'bus': 0}Kendaraan Keluar : {'motor_keluar': 3, 'mobil_keluar': 0, 'truk_keluar': 0, 'bus_keluar': 0}
+--------------------
+Date: 11/7/2023
+Time: 20:35
+Phone Number: +6289627286733
+Message: ============== *VEHICLE COUNTER PEI* ============== Kendaraan Masuk : {'motor': 3, 'mobil': 0, 'truk': 0, 'bus': 0}Kendaraan Keluar : {'motor_keluar': 3, 'mobil_keluar': 0, 'truk_keluar': 0, 'bus_keluar': 0}
+--------------------

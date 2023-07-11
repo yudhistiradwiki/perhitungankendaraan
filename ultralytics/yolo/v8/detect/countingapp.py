@@ -389,34 +389,31 @@ def login():
     if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
         username = request.form['username']
         password = request.form['password']
-        # Retrieve the hashed password
+
         hash = password + app.secret_key
         hash = hashlib.sha1(hash.encode())
-        # password = hash.hexdigest()
-        # Check if account exists using MySQL
         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cursor.execute('SELECT * FROM accounts WHERE username = %s AND password = %s', (username, password,))
-        # Fetch one record and return the result
         account = cursor.fetchone()
         if account:
-            # Create session data, we can access this data in other routes
+          
             session['loggedin'] = True
             session['id'] = account['id']
             session['username'] = account['username']
-            # Redirect to home page
+            
             return redirect('/home')
         else:
-            # Account doesnt exist or username/password incorrect
+            
             msg = "maaf salah"
     return render_template('login.html', msg=msg)
 
 @app.route('/logout')
 def logout():
-     # Remove session data, this will log the user out
+    
    session.pop('loggedin', None)
    session.pop('id', None)
    session.pop('username', None)
-   # Redirect to login page
+   
    return redirect(url_for('login'))
 
 
@@ -424,21 +421,25 @@ def logout():
 @app.route('/home')
 def home():
     import json
+    from decimal import Decimal
+    class DecimalEncoder(json.JSONEncoder):
+        def default(self, obj):
+            # 👇️ if passed in object is instance of Decimal
+            # convert it to a string
+            if isinstance(obj, Decimal):
+                return str(obj)
+            # 👇️ otherwise use the default behavior
+            return json.JSONEncoder.default(self, obj)
     if request.method == 'GET' and 'loggedin' in session:
         cursor = mysql.connection.cursor()
-        cursor.execute(''' SELECT ROUND(AVG(motor)) FROM datacounter ''')
-        motor = cursor.fetchone()
-        cursor.execute(''' SELECT ROUND(AVG(mobil)) FROM datacounter ''')
-        mobil = cursor.fetchone()
-        cursor.execute(''' SELECT ROUND(AVG(truk)) FROM datacounter ''')
-        truk = cursor.fetchone()
-        cursor.execute(''' SELECT ROUND(AVG(bus)) FROM datacounter ''')
-        bus = cursor.fetchone()
-        cursor.execute(''' SELECT tanggal FROM datacounter ''')
-        tanggal = cursor.fetchall()
-        cursor.execute(''' SELECT SUM(motor) AS motor, SUM(mobil) AS mobil, SUM(truk) AS truk, SUM(bus) AS bus FROM datacounter GROUP BY tanggal LIMIT 2 ''')
+        cursor.execute(''' SELECT ROUND(AVG(motor)), ROUND(AVG(mobil)), ROUND(AVG(truk)), ROUND(AVG(bus)) FROM datacounter ''')
+        rata = cursor.fetchone()
+        cursor.execute(''' SELECT tanggal FROM datacounter GROUP BY tanggal LIMIT 2 ''')
         graph = cursor.fetchall()
-        return render_template('index.html', motor=motor, mobil=mobil, truk=truk, bus=bus, tanggal=tanggal)
+        datachartmobil = json.dumps(Decimal(rata[0]), cls=DecimalEncoder)
+        print(rata)
+        # print(Decimal(mobil[0]))
+        return render_template('index.html', datachartmobil=datachartmobil, rata=rata)
     return redirect(url_for('login'))
 
 #---------------- route menu hitung ----------------
@@ -446,6 +447,16 @@ def home():
 def hitung():
     if request.method == 'GET' and 'loggedin' in session:
         return render_template('perhitungan.html')
+    return redirect(url_for('login'))
+
+#---------------- route menu hitung ----------------
+@app.route("/datacounter", methods=['GET','POST'])
+def dtcounter():
+    if request.method == 'GET' and 'loggedin' in session:
+        cursor = mysql.connection.cursor()
+        cursor.execute(''' SELECT * FROM datacounter ''')
+        data = cursor.fetchall()
+        return render_template('datacounter.html', data=data)
     return redirect(url_for('login'))
 
 
@@ -478,6 +489,7 @@ def webapp():
     mysql.connection.commit()
     cursor.execute(''' SELECT * FROM datacounter ''')
     datacounter = cursor.fetchall()
+
     return render_template('perhitungan.html', keluar=str(kendaraan_keluar), masuk=str(kendaraan_masuk), datacounter=datacounter)
 
 @app.route('/send', methods=['GET','POST'])
