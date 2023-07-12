@@ -431,15 +431,48 @@ def home():
             # 👇️ otherwise use the default behavior
             return json.JSONEncoder.default(self, obj)
     if request.method == 'GET' and 'loggedin' in session:
+        # Rata - rata kendaraan
         cursor = mysql.connection.cursor()
-        cursor.execute(''' SELECT ROUND(AVG(motor)), ROUND(AVG(mobil)), ROUND(AVG(truk)), ROUND(AVG(bus)) FROM datacounter ''')
+        cursor.execute(''' SELECT ROUND(AVG(motor)), ROUND(AVG(mobil)), ROUND(AVG(truk)), ROUND(AVG(bus)) FROM datacounter GROUP BY tanggal LIMIT 7 ''')
         rata = cursor.fetchone()
-        cursor.execute(''' SELECT tanggal FROM datacounter GROUP BY tanggal LIMIT 2 ''')
-        graph = cursor.fetchall()
-        datachartmobil = json.dumps(Decimal(rata[0]), cls=DecimalEncoder)
-        print(rata)
+
+        # Array tanggal
+        cursor.execute(''' SELECT tanggal FROM datacounter GROUP BY tanggal LIMIT 7 ''')
+        tanggal = cursor.fetchall()
+        tanggal_id = []
+        for result in tanggal:
+            tanggal_id.append(result[0].strftime("%d-%m-%Y"))
+
+        #mobil
+        cursor.execute(''' SELECT SUM(mobil) FROM datacounter GROUP BY tanggal LIMIT 7 ''')
+        mobil = cursor.fetchall()
+        mobil_id = []
+        for result in mobil:
+            mobil_id.append(int(result[0]))
+        
+        #motor
+        cursor.execute(''' SELECT SUM(motor) FROM datacounter GROUP BY tanggal LIMIT 7 ''')
+        motor = cursor.fetchall()
+        motor_id = []
+        for result in motor:
+            motor_id.append(int(result[0]))
+        
+        #Truk
+        cursor.execute(''' SELECT SUM(truk) FROM datacounter GROUP BY tanggal LIMIT 7 ''')
+        truk = cursor.fetchall()
+        truk_id = []
+        for result in truk:
+            truk_id.append(int(result[0]))
+
+        #Bus
+        cursor.execute(''' SELECT SUM(bus) FROM datacounter GROUP BY tanggal LIMIT 7 ''')
+        bus = cursor.fetchall()
+        bus_id = []
+        for result in bus:
+            bus_id.append(int(result[0]))
+        
         # print(Decimal(mobil[0]))
-        return render_template('index.html', datachartmobil=datachartmobil, rata=rata)
+        return render_template('index.html',tanggal_id=tanggal_id, rata=rata, mobil_id=mobil_id, motor_id=motor_id, truk_id=truk_id, bus_id=bus_id)
     return redirect(url_for('login'))
 
 #---------------- route menu hitung ----------------
