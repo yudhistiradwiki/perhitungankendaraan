@@ -437,35 +437,35 @@ def home():
         rata = cursor.fetchone()
 
         # Array tanggal
-        cursor.execute(''' SELECT tanggal FROM datacounter GROUP BY tanggal LIMIT 7 ''')
+        cursor.execute(''' SELECT tanggal FROM datacounter GROUP BY tanggal DESC LIMIT 7 ''')
         tanggal = cursor.fetchall()
         tanggal_id = []
         for result in tanggal:
             tanggal_id.append(result[0].strftime("%d-%m-%Y"))
 
         #mobil
-        cursor.execute(''' SELECT SUM(mobil) FROM datacounter GROUP BY tanggal LIMIT 7 ''')
+        cursor.execute(''' SELECT SUM(mobil) FROM datacounter GROUP BY tanggal DESC LIMIT 7 ''')
         mobil = cursor.fetchall()
         mobil_id = []
         for result in mobil:
             mobil_id.append(int(result[0]))
         
         #motor
-        cursor.execute(''' SELECT SUM(motor) FROM datacounter GROUP BY tanggal LIMIT 7 ''')
+        cursor.execute(''' SELECT SUM(motor) FROM datacounter GROUP BY tanggal DESC LIMIT 7 ''')
         motor = cursor.fetchall()
         motor_id = []
         for result in motor:
             motor_id.append(int(result[0]))
         
         #Truk
-        cursor.execute(''' SELECT SUM(truk) FROM datacounter GROUP BY tanggal LIMIT 7 ''')
+        cursor.execute(''' SELECT SUM(truk) FROM datacounter GROUP BY tanggal DESC LIMIT 7 ''')
         truk = cursor.fetchall()
         truk_id = []
         for result in truk:
             truk_id.append(int(result[0]))
 
         #Bus
-        cursor.execute(''' SELECT SUM(bus) FROM datacounter GROUP BY tanggal LIMIT 7 ''')
+        cursor.execute(''' SELECT SUM(bus) FROM datacounter GROUP BY tanggal DESC LIMIT 7 ''')
         bus = cursor.fetchall()
         bus_id = []
         for result in bus:
@@ -487,7 +487,7 @@ def hitung():
 def dtcounter():
     if request.method == 'GET' and 'loggedin' in session:
         cursor = mysql.connection.cursor()
-        cursor.execute(''' SELECT * FROM datacounter ''')
+        cursor.execute(''' SELECT * FROM datacounter''')
         data = cursor.fetchall()
         return render_template('datacounter.html', data=data)
     return redirect(url_for('login'))
@@ -523,7 +523,8 @@ def webapp():
     cursor.execute(''' SELECT * FROM datacounter ''')
     datacounter = cursor.fetchall()
 
-    return render_template('perhitungan.html', keluar=str(kendaraan_keluar), masuk=str(kendaraan_masuk), datacounter=datacounter)
+    wa = '<button type="submit" class="btn btn-outline-primary"><i class="mdi mdi-whatsapp"></i></button>'
+    return render_template('perhitungan.html', wa=wa, keluar=str(kendaraan_keluar), masuk=str(kendaraan_masuk), datacounter=datacounter)
 
 @app.route('/send', methods=['GET','POST'])
 def send():
