@@ -362,7 +362,7 @@ class DetectionPredictor(BasePredictor):
 @hydra.main(version_base=None, config_path=str(DEFAULT_CONFIG.parent), config_name=DEFAULT_CONFIG.name)
 def predict(cfg):
     init_tracker()
-    cfg.model = "best.pt"
+    cfg.model = "ep350.pt"
     cfg.imgsz = check_imgsz(cfg.imgsz, min_dim=2)  # check image size
     # cfg.source = "http://192.168.0.127:4747/video" #"2"
     cfg.source = "2"
@@ -492,7 +492,7 @@ def hitung():
 def dtcounter():
     if request.method == 'GET' and 'loggedin' in session:
         cursor = mysql.connection.cursor()
-        cursor.execute(''' SELECT * FROM datacounter''')
+        cursor.execute(''' SELECT tanggal, SUM(mobil_keluar), SUM(motor_keluar), SUM(truk_keluar), SUM(bus_keluar), SUM(mobil), SUM(motor), SUM(truk), SUM(bus) FROM datacounter GROUP BY tanggal''')
         data = cursor.fetchall()
         return render_template('datacounter.html', data=data)
     return redirect(url_for('login'))
